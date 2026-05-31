@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Zap, Menu } from "lucide-react"
+import { usePathname } from "next/navigation"
+import { TrendingUp, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Sheet,
@@ -13,31 +14,57 @@ import {
 } from "@/components/ui/sheet"
 import { Separator } from "@/components/ui/separator"
 import { ThemeToggle } from "@/components/theme/theme-toggle"
-import { NAV_LINKS, SITE_CONFIG } from "@/lib/constants"
+import { CATEGORIES, SITE_CONFIG } from "@/lib/constants"
+import { cn } from "@/lib/utils"
 
-// 사이트 로고 + 이름 조합 컴포넌트
+// 사이트 로고 컴포넌트
 function Logo() {
   return (
-    <Link href="/" className="flex items-center gap-2 font-semibold">
-      <Zap className="size-5 text-primary" />
+    <Link href="/" className="flex items-center gap-2 font-bold">
+      <TrendingUp className="size-5 text-primary" />
       <span>{SITE_CONFIG.name}</span>
     </Link>
   )
 }
 
-// 데스크탑 가로 네비게이션 (md 이상에서만 표시)
-function DesktopNav() {
+// 현재 경로에서 활성 카테고리 id를 추출
+function useActiveCategory() {
+  const pathname = usePathname()
+  // /category/[id] 패턴 매칭
+  const match = pathname.match(/^\/category\/(.+)$/)
+  if (match) return match[1]
+  // 홈 경로는 "all"로 처리
+  if (pathname === "/") return "all"
+  return null
+}
+
+// 데스크탑 카테고리 탭 네비게이션 (md 이상에서만 표시)
+function DesktopCategoryNav() {
+  // 현재 활성 카테고리
+  const activeCategory = useActiveCategory()
+
   return (
-    <nav className="hidden md:flex items-center gap-6">
-      {NAV_LINKS.map((link) => (
-        <Link
-          key={link.href}
-          href={link.href}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          {link.label}
-        </Link>
-      ))}
+    <nav className="hidden md:flex items-center gap-1">
+      {CATEGORIES.map((category) => {
+        // 탭 활성 여부
+        const isActive = category.id === activeCategory
+        const href = category.id === "all" ? "/" : `/category/${category.id}`
+
+        return (
+          <Link
+            key={category.id}
+            href={href}
+            className={cn(
+              "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+              isActive
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            )}
+          >
+            {category.label}
+          </Link>
+        )
+      })}
     </nav>
   )
 }
@@ -46,6 +73,7 @@ function DesktopNav() {
 function MobileNav() {
   // 드로어 열림 상태
   const [open, setOpen] = useState(false)
+  const activeCategory = useActiveCategory()
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -62,29 +90,41 @@ function MobileNav() {
         </SheetHeader>
         <Separator className="my-4" />
         <nav className="flex flex-col gap-1 px-2">
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setOpen(false)}
-              className="rounded-md px-3 py-2 text-sm hover:bg-muted transition-colors"
-            >
-              {link.label}
-            </Link>
-          ))}
+          {CATEGORIES.map((category) => {
+            const isActive = category.id === activeCategory
+            const href = category.id === "all" ? "/" : `/category/${category.id}`
+
+            return (
+              <Link
+                key={category.id}
+                href={href}
+                onClick={() => setOpen(false)}
+                className={cn(
+                  "rounded-md px-3 py-2 text-sm transition-colors",
+                  isActive
+                    ? "bg-primary/10 text-primary font-medium"
+                    : "hover:bg-muted text-muted-foreground"
+                )}
+              >
+                {category.label}
+              </Link>
+            )
+          })}
         </nav>
       </SheetContent>
     </Sheet>
   )
 }
 
-// 헤더: 로고 + 데스크탑 네비 + 테마 토글 + 모바일 메뉴
+// 헤더: 로고 + 카테고리 탭 네비 + 테마 토글 + 모바일 메뉴
 export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Logo />
-        <DesktopNav />
+        <div className="flex items-center gap-6">
+          <Logo />
+          <DesktopCategoryNav />
+        </div>
         <div className="flex items-center gap-1">
           <ThemeToggle />
           <MobileNav />

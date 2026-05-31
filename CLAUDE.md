@@ -1,5 +1,9 @@
 # CLAUDE.md
 
+**Econ Brief**는 Notion을 CMS로 활용하여 경제 뉴스 요약 콘텐츠를 자동 발행하고, 카테고리·태그 기반으로 탐색할 수 있는 경제 뉴스 웹 서비스다.
+
+상세 프로젝트 요구사항은 @docs/PRD.md 참조
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 @AGENTS.md
@@ -29,32 +33,44 @@ npm run lint     # ESLint 검사
 
 ## 아키텍처 개요
 
-**Next.js 16 App Router** 기반 스타터킷. Pages Router는 사용하지 않는다.
+**Next.js 16 App Router** 기반 Notion CMS 뉴스 서비스. Pages Router는 사용하지 않는다.
 
 ```
 app/
-  layout.tsx       # 전역 레이아웃: ThemeProvider → TooltipProvider → Header/main/Footer/Toaster
-  page.tsx         # 랜딩 페이지 (HeroSection, FeaturesSection, CTASection)
-  loading.tsx      # 전역 로딩 UI
-  not-found.tsx    # 404 페이지
-  login/
-    page.tsx       # 로그인 페이지 (메타데이터 + LoginForm)
+  layout.tsx                    # 전역 레이아웃: ThemeProvider → TooltipProvider → Header/main/Footer/Toaster
+  page.tsx                      # 홈 페이지 (뉴스 목록 + 히어로)
+  loading.tsx                   # 전역 로딩 UI (뉴스 그리드 스켈레톤)
+  not-found.tsx                 # 404 페이지
+  category/
+    [category]/
+      page.tsx                  # 카테고리별 뉴스 목록
+  news/
+    [id]/
+      page.tsx                  # 뉴스 상세 페이지
 components/
-  layout/          # Header (sticky, 반응형 네비 — Client), Footer (Server)
-  providers/       # ThemeProvider (next-themes 래퍼 — Client)
-  theme/           # ThemeToggle (라이트/다크/시스템 전환 — Client)
-  auth/            # LoginForm 등 인증 관련 컴포넌트 (Client)
-  ui/              # shadcn/ui 컴포넌트 (직접 수정 가능)
+  news/                         # 뉴스 관련 컴포넌트
+    NewsCard.tsx                # 뉴스 카드 단일 항목
+    NewsGrid.tsx                # 카드 그리드 레이아웃
+    HeroSection.tsx             # 홈 상단 히어로 섹션
+    CategoryTabs.tsx            # 카테고리 탭 필터 (Client)
+    TagBadge.tsx                # 태그 뱃지
+    NotionRenderer.tsx          # Notion 블록 렌더러
+  layout/                       # Header (sticky, 카테고리 탭 — Client), Footer (Server)
+  providers/                    # ThemeProvider (next-themes 래퍼 — Client)
+  theme/                        # ThemeToggle (라이트/다크/시스템 전환 — Client)
+  ui/                           # shadcn/ui 컴포넌트 (직접 수정 가능)
 lib/
-  constants.ts     # SITE_CONFIG, NAV_LINKS, FOOTER_LINKS, FEATURES
-  utils.ts         # cn() 유틸리티 (clsx + tailwind-merge)
+  notion.ts                     # Notion API 클라이언트 및 쿼리 함수
+  constants.ts                  # SITE_CONFIG, CATEGORIES 상수
+  types.ts                      # NewsArticle, NotionBlock 타입
+  utils.ts                      # cn() 유틸리티 (clsx + tailwind-merge)
 ```
 
 ## 컴포넌트 작성 규칙
 
 **Server vs Client 컴포넌트**
 - `"use client"`는 `useState` / `useEffect` / 이벤트 핸들러가 필요한 경우에만 선언
-- 현재 Client Component: `Header`, `ThemeProvider`, `ThemeToggle`, `LoginForm`
+- 현재 Client Component: `Header`, `ThemeProvider`, `ThemeToggle`, `CategoryTabs`
 - 나머지는 모두 Server Component (기본값)
 
 **export 규칙**
@@ -83,7 +99,7 @@ lib/
 
 ## 상수 관리
 
-사이트 메타 정보·네비 링크·푸터 링크·랜딩 기능 카드 데이터는 모두 `lib/constants.ts`에서 관리. 페이지·컴포넌트에서 직접 하드코딩 금지.
+사이트 메타 정보(`SITE_CONFIG`)와 카테고리 목록(`CATEGORIES`)은 모두 `lib/constants.ts`에서 관리. 페이지·컴포넌트에서 직접 하드코딩 금지.
 
 ## shadcn/ui 컴포넌트 추가
 
