@@ -2,9 +2,12 @@
 
 **Econ Brief**는 Notion을 CMS로 활용하여 경제 뉴스 요약 콘텐츠를 자동 발행하고, 카테고리·태그 기반으로 탐색할 수 있는 경제 뉴스 웹 서비스다.
 
-상세 프로젝트 요구사항은 @docs/PRD.md 참조
-
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Context
+
+- PRD 문서: @docs/PRD.md
+- 개발 로드맵: @docs/ROADMAP.md
 
 @AGENTS.md
 

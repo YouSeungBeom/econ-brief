@@ -24,23 +24,38 @@ Notion CMS 기반 경제 뉴스 요약 서비스를 단계적으로 구축하는
 
 ## 개발 단계
 
-### Phase 1: 애플리케이션 골격 구축 ✅
+### Phase 1: 프로젝트 골격 구축 ✅
 
-> 프로젝트 구조, 타입 정의, 공통 레이아웃 골격 완성
+> **왜 이 순서인가?**
+> 모든 개발 작업의 전제 조건이다. 프레임워크 초기화와 전역 레이아웃 뼈대가 없으면 어떤 파일도 실행 환경을 갖지 못한다.
+> 이 단계에서는 "무엇을 만들지"가 아니라 "어디에 만들지"를 확정한다.
+> 라우트 파일은 빈 껍데기로만 생성하며, 실제 UI나 로직은 이후 단계에서 채운다.
 
 - **Task 001: 스타터킷 초기 세팅** ✅ — 완료
   - ✅ Next.js 16 App Router 기반 프로젝트 초기화
   - ✅ TypeScript strict 모드, TailwindCSS v4, shadcn/ui 설정
   - ✅ `app/layout.tsx` — ThemeProvider → TooltipProvider → Header/Footer 전역 레이아웃
   - ✅ `app/not-found.tsx` — 404 페이지
-
-- **Task 002: 타입 정의 및 프로젝트 구조 확립** ✅ — 완료
-  - 관련 기능: `F001`, `F002`, `F010`
-  - ✅ `lib/types.ts` — `NewsArticle`, `NotionBlock` 인터페이스 정의
-  - ✅ `lib/constants.ts` — `SITE_CONFIG`, `CATEGORIES` 상수 추가
   - ✅ `app/category/[category]/page.tsx` — 카테고리 페이지 라우트 골격 생성
   - ✅ `app/news/[id]/page.tsx` — 뉴스 상세 페이지 라우트 골격 생성
   - ✅ `app/loading.tsx` — 전역 로딩 UI (뉴스 그리드 스켈레톤)
+
+---
+
+### Phase 2: 공통 모듈 구축 ✅
+
+> **왜 이 순서인가?**
+> 공통 모듈은 이후 모든 Phase의 코드가 import하는 의존성이다.
+> 타입 정의(types.ts)가 없으면 컴포넌트와 API 함수의 시그니처를 정할 수 없고,
+> 상수(constants.ts)가 없으면 카테고리 목록이 여러 곳에 하드코딩된다.
+> Notion API 클라이언트(notion.ts)는 핵심 기능 구현(Phase 3)에서 007·008·009가 모두 의존하므로,
+> Phase 3 진입 전에 독립적으로 완성되어야 한다.
+> Header·Footer 역시 모든 페이지 UI의 공통 껍데기이므로 이 단계에서 완성한다.
+
+- **Task 002: 타입 정의 및 공통 상수 확립** ✅ — 완료
+  - 관련 기능: `F001`, `F002`, `F010`
+  - ✅ `lib/types.ts` — `NewsArticle`, `NotionBlock` 인터페이스 정의
+  - ✅ `lib/constants.ts` — `SITE_CONFIG`, `CATEGORIES` 상수 추가
 
 - **Task 003: 공통 레이아웃 컴포넌트 구현** ✅ — 완료
   - 관련 기능: `F003`, `F012`
@@ -48,13 +63,39 @@ Notion CMS 기반 경제 뉴스 요약 서비스를 단계적으로 구축하는
   - ✅ `components/layout/footer.tsx` — 사이트 정보 / 출처 안내 푸터
   - ✅ `components/news/CategoryTabs.tsx` — 카테고리 탭 필터 (Client Component)
 
+- **Task 004: Notion API 클라이언트 구현** ⬜ 미시작
+  - 관련 기능: `F001`, `F002`, `F010`
+  - 사전 조건: `npm install @notionhq/client` 실행, `.env.local` 환경변수 설정
+  - `lib/notion.ts` 완전 구현
+    - `@notionhq/client` `Client` 초기화 (`NOTION_API_KEY` 활용)
+    - `getNewsArticles()` — Notion DB 쿼리 (status = Published 필터, published 내림차순 정렬)
+    - `getNewsArticlesByCategory(category)` — 카테고리 필터 쿼리
+    - `getNewsArticlesByTag(tag)` — 태그 필터 쿼리
+    - `getNewsArticle(id)` — 단건 페이지 조회
+    - `getNewsBlocks(pageId)` — 페이지 블록 Children 조회
+    - `getAllArticleIds()` — ISR `generateStaticParams`용 ID 목록 반환
+    - Notion API 응답을 `NewsArticle` 타입으로 파싱하는 변환 함수 구현
+
+  #### 테스트 체크리스트
+  - [ ] `getNewsArticles()` 호출 시 Published 뉴스만 반환되는지 확인
+  - [ ] `getNewsArticlesByCategory("macro")` 호출 시 거시경제 뉴스만 반환되는지 확인
+  - [ ] `getNewsArticlesByTag(tag)` 호출 시 해당 태그 뉴스만 반환되는지 확인
+  - [ ] `getNewsArticle(id)` 호출 시 단건 아티클 데이터가 올바르게 파싱되는지 확인
+  - [ ] `getNewsBlocks(pageId)` 호출 시 블록 배열이 반환되는지 확인
+  - [ ] 존재하지 않는 ID 조회 시 `null` 반환 여부 확인
+
 ---
 
-### Phase 2: UI 컴포넌트 완성 (더미 데이터 활용)
+### Phase 3: 핵심 기능 구현
 
-> 뉴스 관련 컴포넌트 UI를 완성하고, 더미 데이터로 전체 사용자 플로우 검증
+> **왜 이 순서인가?**
+> Phase 2에서 공통 모듈이 완성되었으므로, 이제 실제 사용자에게 보이는 화면과 데이터 흐름을 완성한다.
+> "뉴스 목록 조회(F001)"와 "뉴스 상세 조회(F002)"는 서비스가 동작하기 위한 최소 요건이다.
+> 이것 없이는 나머지 기능(카테고리·태그 필터, 히어로)이 존재해도 콘텐츠가 없다.
+> UI 컴포넌트를 먼저 더미 데이터로 완성한 뒤 실제 API로 교체하는 순서로 진행하여,
+> 데이터 연동 전에 레이아웃 오류를 조기에 발견한다.
 
-- **Task 004: 뉴스 컴포넌트 UI 구현** 🔄 진행 중
+- **Task 005: 뉴스 컴포넌트 UI 구현** 🔄 진행 중
   - 관련 기능: `F001`, `F002`, `F003`, `F004`, `F005`, `F012`
   - 현재 상태: 컴포넌트 파일 생성 완료, 내부 UI 구현 필요
   - `components/news/NewsCard.tsx` — 뉴스 카드 UI (제목·요약·카테고리·발행일·썸네일)
@@ -75,7 +116,7 @@ Notion CMS 기반 경제 뉴스 요약 서비스를 단계적으로 구축하는
     - `paragraph`, `heading_1/2/3`, `bulleted_list_item`, `quote`, `image` 블록 타입 처리
     - Tailwind Typography (`prose`) 클래스 적용
 
-- **Task 005: 전체 페이지 UI 완성** ⬜ 미시작
+- **Task 006: 전체 페이지 UI 완성 (더미 데이터)** ⬜ 미시작
   - 관련 기능: `F001`, `F002`, `F003`, `F004`, `F005`, `F011`, `F012`
   - `app/page.tsx` — 홈 페이지 UI 완성
     - `HeroSection` + `CategoryTabs` + `NewsGrid` 컴포넌트 조합
@@ -91,31 +132,6 @@ Notion CMS 기반 경제 뉴스 요약 서비스를 단계적으로 구축하는
     - `NotionRenderer`로 본문 블록 렌더링
     - `TagBadge` 목록 + 원문 링크 버튼
   - 반응형 디자인 최종 검증 (모바일 375px, 태블릿 768px, 데스크톱 1280px)
-
----
-
-### Phase 3: Notion API 연동 및 핵심 기능 구현
-
-> 더미 데이터를 실제 Notion API 호출로 교체하고 핵심 비즈니스 로직 완성
-
-- **Task 006: Notion API 클라이언트 구현** ⬜ 미시작
-  - 관련 기능: `F001`, `F002`, `F010`
-  - 사전 조건: `npm install @notionhq/client` 실행, `.env.local` 환경변수 설정
-  - `lib/notion.ts` 완전 구현
-    - `@notionhq/client` `Client` 초기화 (`NOTION_API_KEY` 활용)
-    - `getNewsArticles()` — Notion DB 쿼리 (status = Published 필터, published 내림차순 정렬)
-    - `getNewsArticlesByCategory(category)` — 카테고리 필터 쿼리
-    - `getNewsArticle(id)` — 단건 페이지 조회
-    - `getNewsBlocks(pageId)` — 페이지 블록 Children 조회
-    - `getAllArticleIds()` — ISR `generateStaticParams`용 ID 목록 반환
-    - Notion API 응답을 `NewsArticle` 타입으로 파싱하는 변환 함수 구현
-
-  #### 테스트 체크리스트
-  - [ ] `getNewsArticles()` 호출 시 Published 뉴스만 반환되는지 확인
-  - [ ] `getNewsArticlesByCategory("macro")` 호출 시 거시경제 뉴스만 반환되는지 확인
-  - [ ] `getNewsArticle(id)` 호출 시 단건 아티클 데이터가 올바르게 파싱되는지 확인
-  - [ ] `getNewsBlocks(pageId)` 호출 시 블록 배열이 반환되는지 확인
-  - [ ] 존재하지 않는 ID 조회 시 `null` 반환 여부 확인
 
 - **Task 007: 홈 페이지 및 카테고리 페이지 Notion 연동** ⬜ 미시작
   - 관련 기능: `F001`, `F003`, `F011`, `F012`
@@ -158,10 +174,19 @@ Notion CMS 기반 경제 뉴스 요약 서비스를 단계적으로 구축하는
   - [ ] 태그 배지 클릭 시 홈 페이지로 이동하는지 확인
   - [ ] 원문 링크 버튼 클릭 시 새 탭으로 외부 페이지가 열리는지 확인
 
+---
+
+### Phase 4: 추가 기능 구현
+
+> **왜 이 순서인가?**
+> 카테고리 필터(F003)·태그 탐색(F004)·히어로 섹션(F005)은 핵심 기능(뉴스 목록·상세 조회)이
+> 실제 데이터와 연동된 이후에야 의미 있게 동작한다.
+> 더미 데이터 단계에서는 UI 골격만 확인하고, 실제 필터링 로직은 이 단계에서 완성한다.
+> E2E 테스트는 모든 사용자 플로우가 갖춰진 시점에 전체 흐름을 한 번에 검증한다.
+
 - **Task 009: 태그 기반 탐색 구현** ⬜ 미시작
   - 관련 기능: `F004`
   - `app/page.tsx` — `searchParams`로 `tag` 쿼리 파라미터 수신 후 필터링
-  - `lib/notion.ts` — `getNewsArticlesByTag(tag)` 함수 추가
   - `components/news/TagBadge.tsx` — `/?tag=<값>` URL로 이동하는 Link 완성
   - 태그 필터 활성 시 홈 페이지 상단에 현재 태그 표시 및 초기화 버튼 제공
 
@@ -170,7 +195,7 @@ Notion CMS 기반 경제 뉴스 요약 서비스를 단계적으로 구축하는
   - [ ] 태그 필터 적용 시 해당 태그를 가진 뉴스만 표시되는지 확인
   - [ ] 태그 초기화(전체) 클릭 시 전체 뉴스 목록으로 복귀하는지 확인
 
-- **Task 009-1: Notion API 통합 E2E 테스트** ⬜ 미시작
+- **Task 010: Notion API 통합 E2E 테스트** ⬜ 미시작
   - Playwright MCP를 사용한 전체 사용자 플로우 E2E 테스트
   - 홈 → 카테고리 페이지 → 뉴스 상세 → 뒤로가기 플로우 검증
   - 태그 클릭 → 홈 필터링 플로우 검증
@@ -179,25 +204,29 @@ Notion CMS 기반 경제 뉴스 요약 서비스를 단계적으로 구축하는
 
 ---
 
-### Phase 4: 성능 최적화 및 배포
+### Phase 5: 최적화 및 배포
 
-> ISR 전략 최적화, SEO 완성, Vercel 배포 파이프라인 구축
+> **왜 이 순서인가?**
+> 모든 기능이 완성된 후에야 무엇을 최적화할지 판단할 수 있다.
+> ISR revalidate 값, 이미지 도메인 허용 목록, 메타데이터는 실제 콘텐츠 구조를 보고 결정해야 한다.
+> SEO·성능 작업을 먼저 하면 기능 변경 시 메타데이터를 반복해서 수정해야 한다.
+> 배포는 가장 마지막에 수행하여 프로덕션 환경의 환경변수와 빌드 검증을 한 번에 처리한다.
 
-- **Task 010: SEO 및 메타데이터 완성** ⬜ 미시작
+- **Task 011: SEO 및 메타데이터 완성** ⬜ 미시작
   - 관련 기능: `F011`
   - `app/layout.tsx` — 전역 `metadata` 객체 완성 (OG 이미지, Twitter 카드)
   - 각 페이지 `generateMetadata` — 아티클/카테고리별 동적 title, description, OG
   - `public/` — 기본 OG 이미지 및 favicon 추가
   - `robots.txt` / `sitemap.xml` — Next.js 내장 Metadata API 활용
 
-- **Task 011: 성능 최적화** ⬜ 미시작
+- **Task 012: 성능 최적화** ⬜ 미시작
   - 관련 기능: `F011`, `F012`
   - `next/image` — 이미지 최적화 (도메인 허용 목록, `sizes` 속성 설정)
   - ISR `revalidate` 값 조정 (콘텐츠 업데이트 빈도 기반)
   - `loading.tsx` — 스켈레톤 UI가 실제 레이아웃과 일치하도록 개선
   - Notion API 응답 에러 핸들링 강화 (rate limit, timeout 대응)
 
-- **Task 012: Vercel 배포 및 환경변수 설정** ⬜ 미시작
+- **Task 013: Vercel 배포 및 환경변수 설정** ⬜ 미시작
   - Vercel 프로젝트 연결 및 GitHub 자동 배포 설정
   - `NOTION_API_KEY`, `NOTION_DATABASE_ID` 환경변수 Vercel 대시보드 등록
   - 프로덕션 빌드 검증 (`npm run build && npm run start`)
@@ -211,13 +240,13 @@ Notion CMS 기반 경제 뉴스 요약 서비스를 단계적으로 구축하는
 | 기능 ID | 기능명 | 관련 Task |
 |---------|--------|----------|
 | F001 | Notion 뉴스 목록 조회 | Task 002, 004, 005, 006, 007 |
-| F002 | 뉴스 상세 조회 | Task 002, 004, 005, 008 |
-| F003 | 카테고리 필터링 | Task 003, 004, 005, 007 |
-| F004 | 태그 기반 탐색 | Task 004, 005, 008, 009 |
-| F005 | 주요 뉴스 하이라이트 | Task 004, 005, 007 |
-| F010 | Notion API 연동 | Task 002, 006, 007, 008 |
-| F011 | ISR 캐시 전략 | Task 005, 007, 008, 010, 011 |
-| F012 | 반응형 레이아웃 | Task 003, 004, 005, 007, 011 |
+| F002 | 뉴스 상세 조회 | Task 002, 004, 005, 006, 008 |
+| F003 | 카테고리 필터링 | Task 003, 005, 006, 007 |
+| F004 | 태그 기반 탐색 | Task 005, 006, 008, 009 |
+| F005 | 주요 뉴스 하이라이트 | Task 005, 006, 007 |
+| F010 | Notion API 연동 | Task 002, 004, 007, 008 |
+| F011 | ISR 캐시 전략 | Task 006, 007, 008, 011, 012 |
+| F012 | 반응형 레이아웃 | Task 003, 005, 006, 007, 012 |
 
 ---
 
@@ -225,7 +254,8 @@ Notion CMS 기반 경제 뉴스 요약 서비스를 단계적으로 구축하는
 
 | Phase | 상태 | 완료 Task |
 |-------|------|----------|
-| Phase 1: 애플리케이션 골격 구축 | ✅ 완료 | Task 001, 002, 003 |
-| Phase 2: UI 컴포넌트 완성 | 🔄 진행 중 | Task 004 진행 중 |
-| Phase 3: Notion API 연동 및 핵심 기능 구현 | ⬜ 미시작 | — |
-| Phase 4: 성능 최적화 및 배포 | ⬜ 미시작 | — |
+| Phase 1: 프로젝트 골격 구축 | ✅ 완료 | Task 001 |
+| Phase 2: 공통 모듈 구축 | 🔄 진행 중 | Task 002, 003 완료 / Task 004 미시작 |
+| Phase 3: 핵심 기능 구현 | ⬜ 미시작 | Task 005 진행 중 |
+| Phase 4: 추가 기능 구현 | ⬜ 미시작 | — |
+| Phase 5: 최적화 및 배포 | ⬜ 미시작 | — |
