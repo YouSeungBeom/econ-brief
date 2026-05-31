@@ -1,0 +1,1 @@
+- [Econ Brief 초기화](project_econ_brief.md) — 스타터킷 정리 완료. lib/notion.ts 구현, components/news/ UI 개발이 다음 단계.
