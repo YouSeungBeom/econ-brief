@@ -32,7 +32,7 @@
       "env": {
         "DATA_DIR": "C:/Users/TUF/workspace/courses/econ-brief/shrimp_data",
         "TEMPLATES_USE": "en",
-        "ENABLE_GUI": "false"
+        "ENABLE_GUI": "true"
       }
     }
   }
