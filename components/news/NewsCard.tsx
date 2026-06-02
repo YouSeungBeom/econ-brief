@@ -25,55 +25,60 @@ export function NewsCard({ article }: NewsCardProps) {
   const visibleTags = article.tags.slice(0, 3)
 
   return (
-    <Link href={`/news/${article.id}`} className="block">
-      <Card className="h-full transition-shadow hover:shadow-md">
-        {/* 썸네일 영역: 이미지 없으면 회색 플레이스홀더 */}
-        <div className="relative aspect-video w-full overflow-hidden rounded-t-xl">
-          {article.thumbnail ? (
-            <Image
-              src={article.thumbnail}
-              alt={article.title}
-              fill
-              className="object-cover"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            />
-          ) : (
-            <div className="h-full w-full bg-muted" />
-          )}
-        </div>
+    // stretched link 패턴: <a> 중첩 방지 — Link는 absolute로 카드 전체 커버, 태그는 z-10으로 위에 노출
+    <Card className="relative h-full transition-shadow hover:shadow-md">
+      <Link
+        href={`/news/${article.id}`}
+        className="absolute inset-0 z-0 rounded-xl"
+        aria-label={article.title}
+      />
 
-        {/* 카테고리 배지 + 발행일 */}
-        <CardHeader>
-          <div className="flex items-center justify-between gap-2">
-            <Badge variant="secondary" className="shrink-0">
-              {article.category}
-            </Badge>
-            <span className="text-xs text-muted-foreground">
-              {formatDate(article.published)}
-            </span>
-          </div>
-          {/* 제목: 최대 2줄 */}
-          <CardTitle className="line-clamp-2 text-sm font-semibold leading-snug">
-            {article.title}
-          </CardTitle>
-        </CardHeader>
-
-        {/* 요약: 최대 3줄 */}
-        <CardContent>
-          <p className="line-clamp-3 text-xs text-muted-foreground leading-relaxed">
-            {article.summary}
-          </p>
-        </CardContent>
-
-        {/* 태그 배지 목록 */}
-        {visibleTags.length > 0 && (
-          <CardFooter className="flex flex-wrap gap-1">
-            {visibleTags.map((tag) => (
-              <TagBadge key={tag} tag={tag} />
-            ))}
-          </CardFooter>
+      {/* 썸네일 영역: 이미지 없으면 회색 플레이스홀더 */}
+      <div className="relative aspect-video w-full overflow-hidden rounded-t-xl">
+        {article.thumbnail ? (
+          <Image
+            src={article.thumbnail}
+            alt={article.title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          />
+        ) : (
+          <div className="h-full w-full bg-muted" />
         )}
-      </Card>
-    </Link>
+      </div>
+
+      {/* 카테고리 배지 + 발행일 */}
+      <CardHeader>
+        <div className="flex items-center justify-between gap-2">
+          <Badge variant="secondary" className="shrink-0">
+            {article.category}
+          </Badge>
+          <span className="text-xs text-muted-foreground">
+            {formatDate(article.published)}
+          </span>
+        </div>
+        {/* 제목: 최대 2줄 */}
+        <CardTitle className="line-clamp-2 text-sm font-semibold leading-snug">
+          {article.title}
+        </CardTitle>
+      </CardHeader>
+
+      {/* 요약: 최대 3줄 */}
+      <CardContent>
+        <p className="line-clamp-3 text-xs text-muted-foreground leading-relaxed">
+          {article.summary}
+        </p>
+      </CardContent>
+
+      {/* 태그 배지 목록: z-10으로 stretched link 위에 노출 */}
+      {visibleTags.length > 0 && (
+        <CardFooter className="relative z-10 flex flex-wrap gap-1">
+          {visibleTags.map((tag) => (
+            <TagBadge key={tag} tag={tag} />
+          ))}
+        </CardFooter>
+      )}
+    </Card>
   )
 }

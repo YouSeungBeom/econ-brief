@@ -1,15 +1,17 @@
-// 홈 페이지: 최신 뉴스 목록 + 히어로 섹션
-// TODO: Notion에서 뉴스 데이터 페칭 후 NewsGrid, HeroSection 연결
+// 홈 페이지: HeroSection + CategoryTabs + NewsGrid 조합
+import { HeroSection } from "@/components/news/HeroSection"
+import { CategoryTabs } from "@/components/news/CategoryTabs"
+import { NewsGrid } from "@/components/news/NewsGrid"
+import { DUMMY_ARTICLES } from "@/lib/dummy"
+
+export const revalidate = 3600
 
 export default function HomePage() {
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* TODO: HeroSection 컴포넌트 추가 */}
-      {/* TODO: CategoryTabs 컴포넌트 추가 */}
-      {/* TODO: NewsGrid 컴포넌트 추가 */}
-      <p className="text-muted-foreground text-center py-20">
-        콘텐츠 준비 중입니다.
-      </p>
+    <div className="container mx-auto px-4 py-8 space-y-8">
+      <HeroSection articles={DUMMY_ARTICLES.slice(0, 3)} />
+      <CategoryTabs />
+      <NewsGrid articles={DUMMY_ARTICLES} />
     </div>
   )
 }
