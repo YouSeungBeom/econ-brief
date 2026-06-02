@@ -109,23 +109,25 @@ Notion CMS 기반 경제 뉴스 요약 서비스를 단계적으로 구축하는
   - ✅ `components/news/NotionRenderer.tsx` — `paragraph`, `heading_1/2/3`, `bulleted_list_item`, `numbered_list_item`, `quote`, `code`, `image` 7종 블록 처리, `renderRichText()` 헬퍼 분리
   - ✅ `next.config.ts` — Notion/S3/Unsplash 이미지 도메인 `remotePatterns` 추가
 
-- **Task 006: 전체 페이지 UI 완성 (더미 데이터)** ⬜ 미시작
+- **Task 006: 전체 페이지 UI 완성 (더미 데이터)** ✅ — 완료
   - 관련 기능: `F001`, `F002`, `F003`, `F004`, `F005`, `F011`, `F012`
-  - `app/page.tsx` — 홈 페이지 UI 완성
-    - `HeroSection` + `CategoryTabs` + `NewsGrid` 컴포넌트 조합
-    - 더미 `NewsArticle[]` 배열로 전체 레이아웃 검증
-    - `export const revalidate = 3600` 선언 (ISR 준비)
-  - `app/category/[category]/page.tsx` — 카테고리 페이지 UI 완성
-    - 카테고리명 헤딩 + 필터링된 `NewsGrid`
-    - `generateStaticParams`로 CATEGORIES 기반 정적 경로 생성
-    - 페이지 내 `CategoryTabs` — 다른 카테고리로 전환 가능하도록 탭 제공 (모바일에서 헤더 드로어 외 탐색 경로 확보)
-  - `app/news/[id]/page.tsx` — 뉴스 상세 페이지 UI 완성
-    - 아티클 헤더 (제목, 카테고리 배지, 발행일)
-    - 썸네일 이미지 영역
-    - AI 요약 강조 블록 (summary 필드)
-    - `NotionRenderer`로 본문 블록 렌더링
-    - `TagBadge` 목록 + 원문 링크 버튼
-  - 반응형 디자인 최종 검증 (모바일 375px, 태블릿 768px, 데스크톱 1280px)
+  - ✅ `lib/dummy.ts` — `NewsArticle` 6건 + `NotionBlock` 7건 더미 데이터 분리 (`@/lib/dummy` import 통일)
+  - ✅ `app/page.tsx` — 홈 페이지 UI 완성
+    - ✅ `HeroSection` + `CategoryTabs` + `NewsGrid` 컴포넌트 조합
+    - ✅ 더미 `NewsArticle[]` 배열로 전체 레이아웃 검증
+    - ✅ `export const revalidate = 3600` 선언 (ISR 준비)
+  - ✅ `app/category/[category]/page.tsx` — 카테고리 페이지 UI 완성
+    - ✅ 카테고리명 헤딩 + 필터링된 `NewsGrid`
+    - ✅ `generateStaticParams`로 CATEGORIES 기반 정적 경로 생성
+    - ✅ 페이지 내 `CategoryTabs` — 다른 카테고리로 전환 가능하도록 탭 제공 (모바일에서 헤더 드로어 외 탐색 경로 확보)
+  - ✅ `app/news/[id]/page.tsx` — 뉴스 상세 페이지 UI 완성
+    - ✅ 아티클 헤더 (제목, 카테고리 배지, 발행일)
+    - ✅ 썸네일 이미지 영역
+    - ✅ AI 요약 강조 블록 (summary 필드)
+    - ✅ `NotionRenderer`로 본문 블록 렌더링
+    - ✅ `TagBadge` 목록 + 원문 링크 버튼
+  - ✅ `components/news/NewsCard.tsx` — stretched link 패턴으로 중첩 `<a>` 태그 수정
+  - ✅ 반응형 디자인 최종 검증 (모바일 375px, 태블릿 768px, 데스크톱 1280px)
 
 - **Task 007: 홈 페이지 및 카테고리 페이지 Notion 연동** ⬜ 미시작
   - 관련 기능: `F001`, `F003`, `F011`, `F012`
@@ -250,6 +252,6 @@ Notion CMS 기반 경제 뉴스 요약 서비스를 단계적으로 구축하는
 |-------|------|----------|
 | Phase 1: 프로젝트 골격 구축 | ✅ 완료 | Task 001 |
 | Phase 2: 공통 모듈 구축 | ✅ 완료 | Task 002, 003, 004 완료 |
-| Phase 3: 핵심 기능 구현 | 🔄 진행 중 | Task 005 완료, Task 006 다음 |
+| Phase 3: 핵심 기능 구현 | 🔄 진행 중 | Task 005, 006 완료, Task 007 다음 |
 | Phase 4: 추가 기능 구현 | ⬜ 미시작 | — |
 | Phase 5: 최적화 및 배포 | ⬜ 미시작 | — |
