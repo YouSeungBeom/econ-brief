@@ -63,20 +63,25 @@ Notion CMS 기반 경제 뉴스 요약 서비스를 단계적으로 구축하는
   - ✅ `components/layout/footer.tsx` — 사이트 정보 / 출처 안내 푸터
   - ✅ `components/news/CategoryTabs.tsx` — 카테고리 탭 필터 (Client Component)
 
-- **Task 004: Notion API 클라이언트 구현** ⬜ 미시작
+- **Task 004: Notion API 클라이언트 구현** ✅ — 완료
   - 관련 기능: `F001`, `F002`, `F010`
-  - 사전 조건: `npm install @notionhq/client` 실행, `.env.local` 환경변수 설정
-  - `lib/notion.ts` 완전 구현
-    - `@notionhq/client` `Client` 초기화 (`NOTION_API_KEY` 활용)
-    - `getNewsArticles()` — Notion DB 쿼리 (status = Published 필터, published 내림차순 정렬)
-    - `getNewsArticlesByCategory(category)` — 카테고리 필터 쿼리
-    - `getNewsArticlesByTag(tag)` — 태그 필터 쿼리
-    - `getNewsArticle(id)` — 단건 페이지 조회
-    - `getNewsBlocks(pageId)` — 페이지 블록 Children 조회
-    - `getAllArticleIds()` — ISR `generateStaticParams`용 ID 목록 반환
-    - Notion API 응답을 `NewsArticle` 타입으로 파싱하는 변환 함수 구현
+  - ✅ `npm install @notionhq/client` 설치 완료
+  - ✅ `.env.local` 환경변수 (`NOTION_API_KEY`, `NOTION_DATABASE_ID`) 설정 완료
+  - ✅ `lib/notion.ts` 완전 구현
+    - ✅ `@notionhq/client` `Client` 초기화 (`NOTION_API_KEY` 활용)
+    - ✅ `getDataSourceId()` — DB → data_source_id 1회 조회 후 캐싱 (신 SDK 대응)
+    - ✅ `getNewsArticles()` — Notion DB 쿼리 (status = Published 필터, published 내림차순 정렬)
+    - ✅ `getNewsArticlesByCategory(category)` — 카테고리 필터 쿼리
+    - ✅ `getNewsArticlesByTag(tag)` — 태그 필터 쿼리
+    - ✅ `getNewsArticle(id)` — 단건 페이지 조회
+    - ✅ `getNewsBlocks(pageId)` — 페이지 블록 Children 조회 (iteratePaginatedAPI)
+    - ✅ `getAllArticleIds()` — ISR `generateStaticParams`용 ID 목록 반환
+    - ✅ `parsePageToNewsArticle()` — Notion API 응답을 `NewsArticle` 타입으로 파싱
 
-  #### 테스트 체크리스트
+  > ⚠️ **참고**: 신 SDK(`@notionhq/client` 최신)에서 `databases.query`가 `dataSources.query`로 변경됨.
+  > `data_source_id`는 `databases.retrieve`로 조회 후 캐싱하는 방식으로 구현.
+
+  #### 테스트 체크리스트 (Notion DB에 데이터 추가 후 검증)
   - [ ] `getNewsArticles()` 호출 시 Published 뉴스만 반환되는지 확인
   - [ ] `getNewsArticlesByCategory("macro")` 호출 시 거시경제 뉴스만 반환되는지 확인
   - [ ] `getNewsArticlesByTag(tag)` 호출 시 해당 태그 뉴스만 반환되는지 확인
@@ -106,6 +111,9 @@ Notion CMS 기반 경제 뉴스 요약 서비스를 단계적으로 구축하는
   - `components/news/NewsGrid.tsx` — 카드 그리드 레이아웃
     - 반응형 1열(모바일) → 2열(태블릿) → 3열(데스크톱)
     - 더미 `NewsArticle[]` 배열을 props로 수신
+  - `components/news/NewsGrid.tsx` — 빈 상태 UI
+    - 뉴스가 없을 때 아이콘 + 설명 텍스트 + 홈으로 돌아가기 CTA 표시
+    - `not-found.tsx`와 동일한 시각적 패턴 적용
   - `components/news/HeroSection.tsx` — 홈 상단 히어로 섹션 완성
     - 최신 뉴스 1-3건 대형 카드 강조 표시 (더미 데이터 활용)
     - 서비스명 및 설명 텍스트 포함
@@ -125,6 +133,7 @@ Notion CMS 기반 경제 뉴스 요약 서비스를 단계적으로 구축하는
   - `app/category/[category]/page.tsx` — 카테고리 페이지 UI 완성
     - 카테고리명 헤딩 + 필터링된 `NewsGrid`
     - `generateStaticParams`로 CATEGORIES 기반 정적 경로 생성
+    - 페이지 내 `CategoryTabs` — 다른 카테고리로 전환 가능하도록 탭 제공 (모바일에서 헤더 드로어 외 탐색 경로 확보)
   - `app/news/[id]/page.tsx` — 뉴스 상세 페이지 UI 완성
     - 아티클 헤더 (제목, 카테고리 배지, 발행일)
     - 썸네일 이미지 영역
@@ -255,7 +264,7 @@ Notion CMS 기반 경제 뉴스 요약 서비스를 단계적으로 구축하는
 | Phase | 상태 | 완료 Task |
 |-------|------|----------|
 | Phase 1: 프로젝트 골격 구축 | ✅ 완료 | Task 001 |
-| Phase 2: 공통 모듈 구축 | 🔄 진행 중 | Task 002, 003 완료 / Task 004 미시작 |
+| Phase 2: 공통 모듈 구축 | ✅ 완료 | Task 002, 003, 004 완료 |
 | Phase 3: 핵심 기능 구현 | ⬜ 미시작 | Task 005 진행 중 |
 | Phase 4: 추가 기능 구현 | ⬜ 미시작 | — |
 | Phase 5: 최적화 및 배포 | ⬜ 미시작 | — |
