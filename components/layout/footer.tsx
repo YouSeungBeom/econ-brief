@@ -1,16 +1,13 @@
 import Link from "next/link"
-import { TrendingUp } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 import { SITE_CONFIG, CATEGORIES } from "@/lib/constants"
+import { Logo } from "@/components/layout/logo"
 
 // 브랜드 로고 및 서비스 소개 섹션
 function FooterBrand() {
   return (
     <div>
-      <Link href="/" className="flex items-center gap-2 font-bold">
-        <TrendingUp className="size-5 text-primary" />
-        <span>{SITE_CONFIG.name}</span>
-      </Link>
+      <Logo size="sm" />
       <p className="mt-3 text-sm text-muted-foreground leading-relaxed max-w-xs">
         {SITE_CONFIG.description}
       </p>

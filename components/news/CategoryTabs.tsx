@@ -1,24 +1,31 @@
 "use client"
 
-// 카테고리 탭 필터: 선택된 카테고리로 뉴스 목록 필터링
-// TODO: URL 쿼리 파라미터 또는 라우팅 방식으로 필터 상태 관리
+// 카테고리 탭 필터: 선택된 카테고리로 /category/[id] 라우팅
+// activeCategory prop 미전달 시 현재 경로에서 자동 감지 (Header 재사용 지원)
 
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { CATEGORIES } from "@/lib/constants"
 import type { CategoryId } from "@/lib/constants"
 import { cn } from "@/lib/utils"
 
 interface CategoryTabsProps {
-  // 현재 선택된 카테고리 id
-  activeCategory: CategoryId
+  // 외부에서 활성 카테고리를 주입할 경우 사용, 미전달 시 경로에서 자동 감지
+  activeCategory?: CategoryId
+  className?: string
 }
 
-export function CategoryTabs({ activeCategory }: CategoryTabsProps) {
+export function CategoryTabs({ activeCategory, className }: CategoryTabsProps) {
+  const pathname = usePathname()
+
+  // activeCategory prop이 없으면 현재 경로에서 추출
+  const resolvedActive = activeCategory ?? resolveActiveCategory(pathname)
+
   return (
-    <nav className="flex gap-2 overflow-x-auto pb-1">
+    <nav className={cn("flex gap-2 overflow-x-auto pb-1", className)}>
       {CATEGORIES.map((category) => {
         // 현재 카테고리 활성 여부
-        const isActive = category.id === activeCategory
+        const isActive = category.id === resolvedActive
 
         return (
           <Link
@@ -37,4 +44,12 @@ export function CategoryTabs({ activeCategory }: CategoryTabsProps) {
       })}
     </nav>
   )
+}
+
+// 현재 pathname에서 활성 카테고리 id를 추출하는 순수 함수
+function resolveActiveCategory(pathname: string): CategoryId {
+  const match = pathname.match(/^\/category\/(.+)$/)
+  if (match) return match[1] as CategoryId
+  if (pathname === "/") return "all"
+  return "all"
 }
