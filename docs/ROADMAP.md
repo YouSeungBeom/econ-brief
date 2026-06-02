@@ -100,29 +100,14 @@ Notion CMS 기반 경제 뉴스 요약 서비스를 단계적으로 구축하는
 > UI 컴포넌트를 먼저 더미 데이터로 완성한 뒤 실제 API로 교체하는 순서로 진행하여,
 > 데이터 연동 전에 레이아웃 오류를 조기에 발견한다.
 
-- **Task 005: 뉴스 컴포넌트 UI 구현** 🔄 진행 중
+- **Task 005: 뉴스 컴포넌트 UI 구현** ✅ — 완료
   - 관련 기능: `F001`, `F002`, `F003`, `F004`, `F005`, `F012`
-  - 현재 상태: 컴포넌트 파일 생성 완료, 내부 UI 구현 필요
-  - `components/news/NewsCard.tsx` — 뉴스 카드 UI (제목·요약·카테고리·발행일·썸네일)
-    - shadcn/ui `Card` 컴포넌트 활용
-    - 썸네일 이미지 (`next/image`) 표시
-    - 카테고리 배지 및 발행일 포맷 표시
-    - 클릭 시 `/news/[id]` 라우팅
-  - `components/news/NewsGrid.tsx` — 카드 그리드 레이아웃
-    - 반응형 1열(모바일) → 2열(태블릿) → 3열(데스크톱)
-    - 더미 `NewsArticle[]` 배열을 props로 수신
-  - `components/news/NewsGrid.tsx` — 빈 상태 UI
-    - 뉴스가 없을 때 아이콘 + 설명 텍스트 + 홈으로 돌아가기 CTA 표시
-    - `not-found.tsx`와 동일한 시각적 패턴 적용
-  - `components/news/HeroSection.tsx` — 홈 상단 히어로 섹션 완성
-    - 최신 뉴스 1-3건 대형 카드 강조 표시 (더미 데이터 활용)
-    - 서비스명 및 설명 텍스트 포함
-  - `components/news/TagBadge.tsx` — 태그 배지 컴포넌트
-    - 클릭 시 홈(`/?tag=<값>`)으로 이동
-    - shadcn/ui `Badge` 컴포넌트 활용
-  - `components/news/NotionRenderer.tsx` — Notion 블록 렌더러 골격 완성
-    - `paragraph`, `heading_1/2/3`, `bulleted_list_item`, `quote`, `image` 블록 타입 처리
-    - Tailwind Typography (`prose`) 클래스 적용
+  - ✅ `components/news/TagBadge.tsx` — `Badge asChild` + `Link` 조합, `/?tag=<인코딩값>` 이동
+  - ✅ `components/news/NewsCard.tsx` — Card + 썸네일(`next/image`) + 카테고리 배지 + 날짜 + TagBadge
+  - ✅ `components/news/NewsGrid.tsx` — 반응형 3열 그리드 + 빈 상태 UI (`Newspaper` 아이콘 + CTA)
+  - ✅ `components/news/HeroSection.tsx` — `articles: NewsArticle[]` props, 1건/2~3건 레이아웃 분기, 그라데이션 오버레이
+  - ✅ `components/news/NotionRenderer.tsx` — `paragraph`, `heading_1/2/3`, `bulleted_list_item`, `numbered_list_item`, `quote`, `code`, `image` 7종 블록 처리, `renderRichText()` 헬퍼 분리
+  - ✅ `next.config.ts` — Notion/S3/Unsplash 이미지 도메인 `remotePatterns` 추가
 
 - **Task 006: 전체 페이지 UI 완성 (더미 데이터)** ⬜ 미시작
   - 관련 기능: `F001`, `F002`, `F003`, `F004`, `F005`, `F011`, `F012`
@@ -265,6 +250,6 @@ Notion CMS 기반 경제 뉴스 요약 서비스를 단계적으로 구축하는
 |-------|------|----------|
 | Phase 1: 프로젝트 골격 구축 | ✅ 완료 | Task 001 |
 | Phase 2: 공통 모듈 구축 | ✅ 완료 | Task 002, 003, 004 완료 |
-| Phase 3: 핵심 기능 구현 | ⬜ 미시작 | Task 005 진행 중 |
+| Phase 3: 핵심 기능 구현 | 🔄 진행 중 | Task 005 완료, Task 006 다음 |
 | Phase 4: 추가 기능 구현 | ⬜ 미시작 | — |
 | Phase 5: 최적화 및 배포 | ⬜ 미시작 | — |
