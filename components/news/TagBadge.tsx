@@ -1,4 +1,5 @@
-// 태그 뱃지 컴포넌트: 뉴스 카드와 상세 페이지에서 태그를 시각적으로 표시
+// 태그 배지 컴포넌트: 클릭 시 해당 태그로 필터링된 홈 페이지로 이동
+import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 
 interface TagBadgeProps {
@@ -7,9 +8,16 @@ interface TagBadgeProps {
 }
 
 export function TagBadge({ tag }: TagBadgeProps) {
+  // 태그 값을 URL 파라미터로 인코딩하여 홈 필터 링크 생성
+  const href = `/?tag=${encodeURIComponent(tag)}`
+
   return (
-    <Badge variant="secondary" className="text-xs">
-      {tag}
+    <Badge
+      asChild
+      variant="outline"
+      className="cursor-pointer transition-colors hover:bg-muted"
+    >
+      <Link href={href}>{tag}</Link>
     </Badge>
   )
 }
