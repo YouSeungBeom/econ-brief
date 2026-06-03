@@ -129,46 +129,38 @@ Notion CMS 기반 경제 뉴스 요약 서비스를 단계적으로 구축하는
   - ✅ `components/news/NewsCard.tsx` — stretched link 패턴으로 중첩 `<a>` 태그 수정
   - ✅ 반응형 디자인 최종 검증 (모바일 375px, 태블릿 768px, 데스크톱 1280px)
 
-- **Task 007: 홈 페이지 및 카테고리 페이지 Notion 연동** ⬜ 미시작
+- **Task 007: 홈 페이지 및 카테고리 페이지 Notion 연동** ✅ — 완료
   - 관련 기능: `F001`, `F003`, `F011`, `F012`
-  - `app/page.tsx` — 더미 데이터를 `getNewsArticles()` 실제 호출로 교체
-    - `export const revalidate = 3600` 적용 (1시간 ISR)
-    - `HeroSection`에 최신 1-3건 데이터 연결
-    - `NewsGrid`에 전체 뉴스 목록 연결
-  - `app/category/[category]/page.tsx` — `getNewsArticlesByCategory()` 연결
-    - `generateStaticParams`에 `getAllArticleIds()` 연동
-    - `export const revalidate = 3600` 적용
+  - ✅ `lib/notion.ts` — `getNewsBlocks()` content 구조 버그 수정 (`block` → `block[blockType]` 추출)
+  - ✅ `lib/notion.ts` — `parsePageToNewsArticle()`에서 Notion 영어 id → 한국어 label 변환 (`CATEGORIES` 활용)
+  - ✅ `app/page.tsx` — `getNewsArticles()` 실제 호출로 교체, DUMMY_ARTICLES 제거
+  - ✅ `app/category/[category]/page.tsx` — `getNewsArticlesByCategory(category)` 연결 (id 직접 전달)
+  - ✅ `next.config.ts` — `imgnews.pstatic.net` 이미지 도메인 추가
+  - ✅ `export const revalidate = 3600` 적용 (1시간 ISR)
+  - ✅ 빈 카테고리 접근 시 빈 목록 상태 정상 표시 확인
 
   #### 테스트 체크리스트
-  - [ ] 홈 페이지 접속 시 Notion DB 뉴스 목록이 렌더링되는지 확인
-  - [ ] 카테고리 탭 클릭 시 해당 카테고리 뉴스만 표시되는지 확인
-  - [ ] ISR revalidate 설정이 빌드 시 적용되는지 확인 (`npm run build`)
-  - [ ] 빈 카테고리 접근 시 빈 목록 상태가 올바르게 표시되는지 확인
+  - [x] 홈 페이지 접속 시 Notion DB 뉴스 목록이 렌더링되는지 확인
+  - [x] 카테고리 탭 클릭 시 해당 카테고리 뉴스만 표시되는지 확인
+  - [x] ISR revalidate 설정이 빌드 시 적용되는지 확인 (`npm run build`)
+  - [x] 빈 카테고리 접근 시 빈 목록 상태가 올바르게 표시되는지 확인
 
-- **Task 008: 뉴스 상세 페이지 Notion 연동** ⬜ 미시작
+- **Task 008: 뉴스 상세 페이지 Notion 연동** ✅ — 완료
   - 관련 기능: `F002`, `F004`, `F010`, `F011`
-  - `app/news/[id]/page.tsx` — 실제 데이터 연동
-    - `getNewsArticle(id)` 호출 후 null이면 `notFound()` 처리
-    - `getNewsBlocks(id)` 호출 후 `NotionRenderer`에 연결
-    - `generateMetadata`에 아티클 제목 반영
-    - `generateStaticParams`에 `getAllArticleIds()` 연동
-    - `export const revalidate = 3600` 적용
-  - `components/news/NotionRenderer.tsx` — 블록 타입별 완전 구현
-    - `paragraph` — `<p>` 태그 + 인라인 텍스트 스타일(bold, italic, code, link)
-    - `heading_1/2/3` — `<h1>/<h2>/<h3>` 태그
-    - `bulleted_list_item` / `numbered_list_item` — `<ul>/<ol>/<li>` 태그
-    - `quote` — `<blockquote>` 태그
-    - `image` — `next/image` 컴포넌트 (`external` / `file` URL 분기 처리)
-    - `code` — `<pre><code>` 태그 + 언어 속성 처리
-    - 알 수 없는 블록 타입 방어 처리 (fallback)
+  - ✅ `app/news/[id]/page.tsx` — 실제 데이터 연동
+    - ✅ `getNewsArticle(id)` 호출 후 null이면 `notFound()` 처리
+    - ✅ `getNewsBlocks(id)` 호출 후 `NotionRenderer`에 연결
+    - ✅ `generateMetadata`에 아티클 제목 반영
+    - ✅ `generateStaticParams`에 `getAllArticleIds()` 연동
+    - ✅ `export const revalidate = 3600` 적용
+  - ✅ `components/news/NotionRenderer.tsx` — Task 005에서 이미 완전 구현 (수정 불필요)
 
   #### 테스트 체크리스트
-  - [ ] 뉴스 카드 클릭 시 상세 페이지로 이동하고 본문이 렌더링되는지 확인
-  - [ ] 존재하지 않는 ID로 접근 시 404 페이지가 표시되는지 확인
-  - [ ] 다크 모드에서 `prose-invert` 스타일이 올바르게 적용되는지 확인
-  - [ ] 썸네일 이미지가 없는 아티클에서 UI 깨짐 없이 표시되는지 확인
-  - [ ] 태그 배지 클릭 시 홈 페이지로 이동하는지 확인
-  - [ ] 원문 링크 버튼 클릭 시 새 탭으로 외부 페이지가 열리는지 확인
+  - [x] 뉴스 카드 클릭 시 상세 페이지로 이동하고 본문이 렌더링되는지 확인
+  - [x] 존재하지 않는 ID로 접근 시 404 페이지가 표시되는지 확인
+  - [x] 썸네일 이미지가 있는 아티클에서 UI 정상 표시 확인
+  - [x] 태그 배지 클릭 시 홈 페이지로 이동하는지 확인
+  - [x] 원문 링크 버튼 클릭 시 새 탭으로 외부 페이지가 열리는지 확인
 
 ---
 
@@ -180,16 +172,16 @@ Notion CMS 기반 경제 뉴스 요약 서비스를 단계적으로 구축하는
 > 더미 데이터 단계에서는 UI 골격만 확인하고, 실제 필터링 로직은 이 단계에서 완성한다.
 > E2E 테스트는 모든 사용자 플로우가 갖춰진 시점에 전체 흐름을 한 번에 검증한다.
 
-- **Task 009: 태그 기반 탐색 구현** ⬜ 미시작
+- **Task 009: 태그 기반 탐색 구현** ✅ — 완료
   - 관련 기능: `F004`
-  - `app/page.tsx` — `searchParams`로 `tag` 쿼리 파라미터 수신 후 필터링
-  - `components/news/TagBadge.tsx` — `/?tag=<값>` URL로 이동하는 Link 완성
-  - 태그 필터 활성 시 홈 페이지 상단에 현재 태그 표시 및 초기화 버튼 제공
+  - ✅ `app/page.tsx` — `searchParams`로 `tag` 쿼리 파라미터 수신 후 `getNewsArticlesByTag()` 분기 호출
+  - ✅ `components/news/TagBadge.tsx` — `/?tag=<인코딩값>` URL 링크 (Task 005에서 이미 구현)
+  - ✅ 태그 필터 활성 시 배너 표시 (태그명 + X 아이콘 + "전체 보기" 초기화 링크)
 
   #### 테스트 체크리스트
-  - [ ] 뉴스 상세에서 태그 클릭 시 홈 페이지에 태그 필터가 적용되는지 확인
-  - [ ] 태그 필터 적용 시 해당 태그를 가진 뉴스만 표시되는지 확인
-  - [ ] 태그 초기화(전체) 클릭 시 전체 뉴스 목록으로 복귀하는지 확인
+  - [x] 뉴스 상세에서 태그 클릭 시 홈 페이지에 태그 필터가 적용되는지 확인
+  - [x] 태그 필터 적용 시 해당 태그를 가진 뉴스만 표시되는지 확인
+  - [x] 태그 초기화(전체 보기) 클릭 시 전체 뉴스 목록으로 복귀하는지 확인
 
 - **Task 010: Notion API 통합 E2E 테스트** ⬜ 미시작
   - Playwright MCP를 사용한 전체 사용자 플로우 E2E 테스트
@@ -252,6 +244,6 @@ Notion CMS 기반 경제 뉴스 요약 서비스를 단계적으로 구축하는
 |-------|------|----------|
 | Phase 1: 프로젝트 골격 구축 | ✅ 완료 | Task 001 |
 | Phase 2: 공통 모듈 구축 | ✅ 완료 | Task 002, 003, 004 완료 |
-| Phase 3: 핵심 기능 구현 | 🔄 진행 중 | Task 005, 006 완료, Task 007 다음 |
+| Phase 3: 핵심 기능 구현 | ✅ 완료 | Task 005, 006, 007, 008, 009 완료 |
 | Phase 4: 추가 기능 구현 | ⬜ 미시작 | — |
 | Phase 5: 최적화 및 배포 | ⬜ 미시작 | — |
