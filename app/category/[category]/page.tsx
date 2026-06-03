@@ -4,7 +4,7 @@ import { CATEGORIES } from "@/lib/constants"
 import type { CategoryId } from "@/lib/constants"
 import { CategoryTabs } from "@/components/news/CategoryTabs"
 import { NewsGrid } from "@/components/news/NewsGrid"
-import { DUMMY_ARTICLES } from "@/lib/dummy"
+import { getNewsArticlesByCategory } from "@/lib/notion"
 
 // 동적 라우트 파라미터 타입
 interface PageProps {
@@ -25,21 +25,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-// ISR용 정적 경로 사전 생성
+// ISR용 정적 경로 사전 생성 (all 제외)
 export async function generateStaticParams() {
-  return CATEGORIES.map((c) => ({ category: c.id }))
+  return CATEGORIES.filter((c) => c.id !== "all").map((c) => ({ category: c.id }))
 }
 
 export default async function CategoryPage({ params }: PageProps) {
   const { category } = await params
   const found = CATEGORIES.find((c) => c.id === category)
+  // CATEGORIES id("macro") → Notion select label("거시경제") 변환 후 쿼리
   const label = found?.label ?? category
 
-  // URL 파라미터(category id) → 한국어 레이블 변환 후 더미 데이터 필터링
-  const articles =
-    category === "all"
-      ? DUMMY_ARTICLES
-      : DUMMY_ARTICLES.filter((a) => a.category === label)
+  // Notion DB는 영어 id("macro")로 필터링, 표시용 label은 별도 변환
+  const articles = await getNewsArticlesByCategory(category)
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">

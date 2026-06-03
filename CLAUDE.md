@@ -117,3 +117,10 @@ npx shadcn add <component>
 - `data-slot` 속성으로 컴포넌트 부위 식별 (CSS 선택자용)
 - `data-size`, `data-variant` 속성으로 CVA 없이도 CSS 선택 가능
 - CVA(`class-variance-authority`)로 variant 타입 자동 추론
+
+## 작업 완료 체크리스트
+
+```bash
+npm run check-all  # 모든 검사 통과 확인
+npm run build      # 빌드 성공 확인
+```

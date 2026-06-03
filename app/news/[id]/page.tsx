@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { TagBadge } from "@/components/news/TagBadge"
 import { NotionRenderer } from "@/components/news/NotionRenderer"
-import { DUMMY_ARTICLES, DUMMY_BLOCKS } from "@/lib/dummy"
+import { getNewsArticle, getNewsBlocks, getAllArticleIds } from "@/lib/notion"
 
 // 동적 라우트 파라미터 타입
 interface PageProps {
@@ -27,7 +27,7 @@ function formatDate(dateStr: string): string {
 // 아티클 제목을 title에 반영하는 동적 메타데이터
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params
-  const article = DUMMY_ARTICLES.find((a) => a.id === id) ?? null
+  const article = await getNewsArticle(id)
   if (!article) {
     return { title: "뉴스를 찾을 수 없습니다 | Econ Brief" }
   }
@@ -37,15 +37,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-// ISR용 정적 경로 사전 생성
+// ISR용 정적 경로 사전 생성 (Notion DB의 Published 아티클 ID 기반)
 export async function generateStaticParams() {
-  return DUMMY_ARTICLES.map((a) => ({ id: a.id }))
+  const ids = await getAllArticleIds()
+  return ids.map((id) => ({ id }))
 }
 
 export default async function NewsDetailPage({ params }: PageProps) {
   const { id } = await params
-  const article = DUMMY_ARTICLES.find((a) => a.id === id) ?? null
+  const article = await getNewsArticle(id)
+  // 존재하지 않는 ID 접근 시 404 페이지로 이동
   if (!article) notFound()
+
+  const blocks = await getNewsBlocks(id)
 
   return (
     <article className="container mx-auto px-4 py-8 max-w-3xl space-y-6">
@@ -82,7 +86,7 @@ export default async function NewsDetailPage({ params }: PageProps) {
       )}
 
       {/* Notion 본문 블록 렌더링 */}
-      <NotionRenderer blocks={DUMMY_BLOCKS} />
+      <NotionRenderer blocks={blocks} />
 
       {/* 태그 배지 목록 */}
       {article.tags.length > 0 && (

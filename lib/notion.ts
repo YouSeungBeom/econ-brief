@@ -6,6 +6,7 @@ import {
 } from "@notionhq/client"
 import type { PageObjectResponse } from "@notionhq/client"
 import type { NewsArticle, NotionBlock } from "@/lib/types"
+import { CATEGORIES } from "@/lib/constants"
 
 // Notion 클라이언트 초기화
 const notion = new Client({ auth: process.env.NOTION_API_KEY })
@@ -40,8 +41,11 @@ function parsePageToNewsArticle(page: PageObjectResponse): NewsArticle {
     p["Summary"]?.type === "rich_text"
       ? p["Summary"].rich_text.map((r) => r.plain_text).join("")
       : ""
-  const category =
+  // Notion DB의 영어 ID("macro")를 한국어 label("거시경제")로 변환하여 표시에 사용
+  const rawCategory =
     p["Category"]?.type === "select" ? (p["Category"].select?.name ?? "") : ""
+  const category =
+    CATEGORIES.find((c) => c.id === rawCategory)?.label ?? rawCategory
   const tags =
     p["Tags"]?.type === "multi_select"
       ? p["Tags"].multi_select.map((t) => t.name)
@@ -144,10 +148,14 @@ export async function getNewsBlocks(pageId: string): Promise<NotionBlock[]> {
   for await (const block of iteratePaginatedAPI(notion.blocks.children.list, {
     block_id: pageId,
   })) {
+    // type별 하위 객체(paragraph.rich_text 등)만 content로 저장 — NotionRenderer의 content.rich_text 접근과 매칭
+    const blockType = "type" in block ? block.type : "unsupported"
+    const blockContent =
+      (block as Record<string, unknown>)[blockType] ?? {}
     blocks.push({
       id: block.id,
-      type: "type" in block ? block.type : "unsupported",
-      content: block,
+      type: blockType,
+      content: blockContent as import("@/lib/types").NotionBlockContent,
       parentId: pageId,
     })
   }
