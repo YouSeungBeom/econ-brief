@@ -1,10 +1,24 @@
 // 홈 페이지: HeroSection + CategoryTabs + NewsGrid 조합
+import type { Metadata } from "next"
 import Link from "next/link"
 import { X } from "lucide-react"
 import { HeroSection } from "@/components/news/HeroSection"
 import { CategoryTabs } from "@/components/news/CategoryTabs"
 import { NewsGrid } from "@/components/news/NewsGrid"
 import { getNewsArticles, getNewsArticlesByTag } from "@/lib/notion"
+import { SITE_CONFIG } from "@/lib/constants"
+
+// 홈 페이지 정적 메타데이터 (layout template → "최신 경제 뉴스 | Econ Brief")
+export const metadata: Metadata = {
+  title: "최신 경제 뉴스",
+  description: SITE_CONFIG.description,
+  openGraph: {
+    url: "/",
+    type: "website",
+  },
+  // 정규 URL: 쿼리 파라미터(?tag=...) 있는 URL을 정규 URL로 통합
+  alternates: { canonical: "/" },
+}
 
 export const revalidate = 3600
 

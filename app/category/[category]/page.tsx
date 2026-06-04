@@ -13,15 +13,26 @@ interface PageProps {
 
 export const revalidate = 3600
 
-// 카테고리명을 title에 반영하는 동적 메타데이터
+// 카테고리명을 title·OG에 반영하는 동적 메타데이터
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { category } = await params
   const found = CATEGORIES.find((c) => c.id === category)
+  // 매핑된 한국어 label 없으면 id를 fallback으로 사용
   const label = found?.label ?? category
+  // 카테고리 페이지 설명문
+  const description = `${label} 분야의 최신 경제 뉴스를 확인하세요.`
 
   return {
-    title: `${label} | Econ Brief`,
-    description: `${label} 카테고리의 경제 뉴스 요약`,
+    // layout template이 자동으로 "거시경제 뉴스 | Econ Brief" 형태로 조합
+    title: `${label} 뉴스`,
+    description,
+    openGraph: {
+      type: "website",
+      title: `${label} 뉴스`,
+      description,
+    },
+    // 정규 URL 설정으로 중복 콘텐츠 방지
+    alternates: { canonical: `/category/${category}` },
   }
 }
 

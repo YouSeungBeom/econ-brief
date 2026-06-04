@@ -13,7 +13,8 @@ interface PageProps {
   params: Promise<{ id: string }>
 }
 
-export const revalidate = 3600
+// 뉴스 본문은 거의 수정되지 않으므로 24시간 캐시 (홈/카테고리의 1시간보다 길게 설정)
+export const revalidate = 86400
 
 // 발행일을 한국어 형식으로 포맷하는 헬퍼 함수
 function formatDate(dateStr: string): string {
@@ -24,16 +25,31 @@ function formatDate(dateStr: string): string {
   }).format(new Date(dateStr))
 }
 
-// 아티클 제목을 title에 반영하는 동적 메타데이터
+// 아티클 제목·요약·OG 이미지를 반영하는 동적 메타데이터
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params
   const article = await getNewsArticle(id)
+  // 아티클 없으면 기본 에러 제목 반환 (layout template 적용됨)
   if (!article) {
-    return { title: "뉴스를 찾을 수 없습니다 | Econ Brief" }
+    return { title: "뉴스를 찾을 수 없습니다" }
   }
   return {
-    title: `${article.title} | Econ Brief`,
+    // layout template이 자동으로 "제목 | Econ Brief" 형태로 조합
+    title: article.title,
     description: article.summary,
+    openGraph: {
+      type: "article",
+      // 발행일: ISO 8601 형식으로 변환
+      publishedTime: new Date(article.published).toISOString(),
+      title: article.title,
+      description: article.summary,
+      // 썸네일이 있으면 OG 이미지로 사용, 없으면 기본 OG 이미지 유지
+      images: article.thumbnail
+        ? [{ url: article.thumbnail, width: 1200, height: 630 }]
+        : undefined,
+    },
+    // 정규 URL 설정으로 중복 콘텐츠 방지
+    alternates: { canonical: `/news/${id}` },
   }
 }
 
