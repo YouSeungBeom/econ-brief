@@ -8,8 +8,11 @@ import type { PageObjectResponse } from "@notionhq/client"
 import type { NewsArticle, NotionBlock } from "@/lib/types"
 import { CATEGORIES } from "@/lib/constants"
 
-// Notion 클라이언트 초기화
-const notion = new Client({ auth: process.env.NOTION_API_KEY })
+// Notion 클라이언트 초기화 (Vercel 함수 타임아웃에 맞춰 10초 제한)
+const notion = new Client({
+  auth: process.env.NOTION_API_KEY,
+  timeoutMs: 10000,
+})
 
 // 환경변수에서 DB ID 로드
 const DATABASE_ID = process.env.NOTION_DATABASE_ID!
@@ -81,14 +84,19 @@ function parsePageToNewsArticle(page: PageObjectResponse): NewsArticle {
 
 // Published 상태 뉴스 전체 조회 (발행일 내림차순)
 export async function getNewsArticles(): Promise<NewsArticle[]> {
-  const dataSourceId = await getDataSourceId()
-  const response = await notion.dataSources.query({
-    data_source_id: dataSourceId,
-    filter: { property: "Status", status: { equals: "Published" } },
-    sorts: [{ property: "Published", direction: "descending" }],
-  })
-
-  return response.results.filter(isFullPage).map(parsePageToNewsArticle)
+  try {
+    const dataSourceId = await getDataSourceId()
+    const response = await notion.dataSources.query({
+      data_source_id: dataSourceId,
+      filter: { property: "Status", status: { equals: "Published" } },
+      sorts: [{ property: "Published", direction: "descending" }],
+    })
+    return response.results.filter(isFullPage).map(parsePageToNewsArticle)
+  } catch (error) {
+    // API 오류(rate limit, timeout 등) 발생 시 빈 배열 반환하여 페이지 렌더링 유지
+    console.error("[notion] getNewsArticles 실패:", error)
+    return []
+  }
 }
 
 // 카테고리별 뉴스 조회 (all이면 전체 반환)
@@ -97,36 +105,46 @@ export async function getNewsArticlesByCategory(
 ): Promise<NewsArticle[]> {
   if (category === "all") return getNewsArticles()
 
-  const dataSourceId = await getDataSourceId()
-  const response = await notion.dataSources.query({
-    data_source_id: dataSourceId,
-    filter: {
-      and: [
-        { property: "Status", status: { equals: "Published" } },
-        { property: "Category", select: { equals: category } },
-      ],
-    },
-    sorts: [{ property: "Published", direction: "descending" }],
-  })
-
-  return response.results.filter(isFullPage).map(parsePageToNewsArticle)
+  try {
+    const dataSourceId = await getDataSourceId()
+    const response = await notion.dataSources.query({
+      data_source_id: dataSourceId,
+      filter: {
+        and: [
+          { property: "Status", status: { equals: "Published" } },
+          { property: "Category", select: { equals: category } },
+        ],
+      },
+      sorts: [{ property: "Published", direction: "descending" }],
+    })
+    return response.results.filter(isFullPage).map(parsePageToNewsArticle)
+  } catch (error) {
+    // API 오류 시 빈 목록 반환 — 카테고리 페이지 빈 상태 UI로 폴백
+    console.error("[notion] getNewsArticlesByCategory 실패:", error)
+    return []
+  }
 }
 
 // 태그별 뉴스 조회 (multi_select contains 필터 사용)
 export async function getNewsArticlesByTag(tag: string): Promise<NewsArticle[]> {
-  const dataSourceId = await getDataSourceId()
-  const response = await notion.dataSources.query({
-    data_source_id: dataSourceId,
-    filter: {
-      and: [
-        { property: "Status", status: { equals: "Published" } },
-        { property: "Tags", multi_select: { contains: tag } },
-      ],
-    },
-    sorts: [{ property: "Published", direction: "descending" }],
-  })
-
-  return response.results.filter(isFullPage).map(parsePageToNewsArticle)
+  try {
+    const dataSourceId = await getDataSourceId()
+    const response = await notion.dataSources.query({
+      data_source_id: dataSourceId,
+      filter: {
+        and: [
+          { property: "Status", status: { equals: "Published" } },
+          { property: "Tags", multi_select: { contains: tag } },
+        ],
+      },
+      sorts: [{ property: "Published", direction: "descending" }],
+    })
+    return response.results.filter(isFullPage).map(parsePageToNewsArticle)
+  } catch (error) {
+    // API 오류 시 빈 목록 반환 — 태그 필터 페이지 빈 상태 UI로 폴백
+    console.error("[notion] getNewsArticlesByTag 실패:", error)
+    return []
+  }
 }
 
 // 단건 뉴스 아티클 조회 (존재하지 않으면 null 반환)
@@ -143,28 +161,40 @@ export async function getNewsArticle(id: string): Promise<NewsArticle | null> {
 
 // 뉴스 본문 블록 전체 조회 (iteratePaginatedAPI로 100개 초과 자동 처리)
 export async function getNewsBlocks(pageId: string): Promise<NotionBlock[]> {
-  const blocks: NotionBlock[] = []
+  try {
+    const blocks: NotionBlock[] = []
 
-  for await (const block of iteratePaginatedAPI(notion.blocks.children.list, {
-    block_id: pageId,
-  })) {
-    // type별 하위 객체(paragraph.rich_text 등)만 content로 저장 — NotionRenderer의 content.rich_text 접근과 매칭
-    const blockType = "type" in block ? block.type : "unsupported"
-    const blockContent =
-      (block as Record<string, unknown>)[blockType] ?? {}
-    blocks.push({
-      id: block.id,
-      type: blockType,
-      content: blockContent as import("@/lib/types").NotionBlockContent,
-      parentId: pageId,
-    })
+    for await (const block of iteratePaginatedAPI(notion.blocks.children.list, {
+      block_id: pageId,
+    })) {
+      // type별 하위 객체(paragraph.rich_text 등)만 content로 저장 — NotionRenderer의 content.rich_text 접근과 매칭
+      const blockType = "type" in block ? block.type : "unsupported"
+      const blockContent =
+        (block as Record<string, unknown>)[blockType] ?? {}
+      blocks.push({
+        id: block.id,
+        type: blockType,
+        content: blockContent as import("@/lib/types").NotionBlockContent,
+        parentId: pageId,
+      })
+    }
+
+    return blocks
+  } catch (error) {
+    // 블록 조회 실패 시 빈 배열 반환 — NotionRenderer가 "본문이 없습니다" 표시로 폴백
+    console.error("[notion] getNewsBlocks 실패:", error)
+    return []
   }
-
-  return blocks
 }
 
 // ISR generateStaticParams용 전체 아티클 ID 목록 반환
+// 빌드 실패보다 빈 정적 경로가 나으므로 오류 시 빈 배열 반환
 export async function getAllArticleIds(): Promise<string[]> {
-  const articles = await getNewsArticles()
-  return articles.map((a) => a.id)
+  try {
+    const articles = await getNewsArticles()
+    return articles.map((a) => a.id)
+  } catch (error) {
+    console.error("[notion] getAllArticleIds 실패:", error)
+    return []
+  }
 }
