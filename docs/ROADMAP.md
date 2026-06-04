@@ -91,7 +91,7 @@ Notion CMS 기반 경제 뉴스 요약 서비스를 단계적으로 구축하는
 
 ---
 
-### Phase 3: 핵심 기능 구현
+### Phase 3: 핵심 기능 구현 ✅
 
 > **왜 이 순서인가?**
 > Phase 2에서 공통 모듈이 완성되었으므로, 이제 실제 사용자에게 보이는 화면과 데이터 흐름을 완성한다.
@@ -201,19 +201,20 @@ Notion CMS 기반 경제 뉴스 요약 서비스를 단계적으로 구축하는
 > SEO·성능 작업을 먼저 하면 기능 변경 시 메타데이터를 반복해서 수정해야 한다.
 > 배포는 가장 마지막에 수행하여 프로덕션 환경의 환경변수와 빌드 검증을 한 번에 처리한다.
 
-- **Task 011: SEO 및 메타데이터 완성** ⬜ 미시작
+- **Task 011: SEO 및 메타데이터 완성** ✅ — 완료
   - 관련 기능: `F011`
-  - `app/layout.tsx` — 전역 `metadata` 객체 완성 (OG 이미지, Twitter 카드)
-  - 각 페이지 `generateMetadata` — 아티클/카테고리별 동적 title, description, OG
-  - `public/` — 기본 OG 이미지 및 favicon 추가
-  - `robots.txt` / `sitemap.xml` — Next.js 내장 Metadata API 활용
+  - ✅ `app/layout.tsx` — `metadataBase`, title template, OG/Twitter 전역 메타데이터 완성
+  - ✅ 각 페이지 `generateMetadata` — 아티클/카테고리별 동적 title, description, OG, canonical 추가
+  - ✅ `public/og-default.png` — 기본 OG 이미지 추가 (1200×630px)
+  - ✅ `app/sitemap.ts` — 동적 사이트맵 생성 (홈 + 카테고리 + 전체 뉴스, 24시간 revalidate)
+  - ✅ `app/robots.ts` — robots.txt 생성 (전체 허용 + sitemap URL 지정)
 
-- **Task 012: 성능 최적화** ⬜ 미시작
+- **Task 012: 성능 최적화** ✅ — 완료
   - 관련 기능: `F011`, `F012`
-  - `next/image` — 이미지 최적화 (도메인 허용 목록, `sizes` 속성 설정)
-  - ISR `revalidate` 값 조정 (콘텐츠 업데이트 빈도 기반)
-  - `loading.tsx` — 스켈레톤 UI가 실제 레이아웃과 일치하도록 개선
-  - Notion API 응답 에러 핸들링 강화 (rate limit, timeout 대응)
+  - ✅ `next.config.ts` — AVIF/WebP 이미지 포맷 추가, `minimumCacheTTL: 3600` 설정
+  - ✅ `app/news/[id]/page.tsx` — `revalidate` 3600 → 86400 (24시간)으로 조정
+  - ✅ `app/loading.tsx` — 실제 HeroSection 레이아웃에 맞는 스켈레톤 UI 개선
+  - ✅ `lib/notion.ts` — `timeoutMs: 10000` 설정, 5개 함수 try/catch 에러 핸들링 추가
 
 - **Task 013: Vercel 배포 및 환경변수 설정** ⬜ 미시작
   - Vercel 프로젝트 연결 및 GitHub 자동 배포 설정
@@ -247,4 +248,4 @@ Notion CMS 기반 경제 뉴스 요약 서비스를 단계적으로 구축하는
 | Phase 2: 공통 모듈 구축 | ✅ 완료 | Task 002, 003, 004 완료 |
 | Phase 3: 핵심 기능 구현 | ✅ 완료 | Task 005, 006, 007, 008, 009 완료 |
 | Phase 4: 추가 기능 구현 | ✅ 완료 | Task 009, 010 완료 |
-| Phase 5: 최적화 및 배포 | ⬜ 미시작 | — |
+| Phase 5: 최적화 및 배포 | 🔄 진행 중 | Task 011, 012 완료 |
