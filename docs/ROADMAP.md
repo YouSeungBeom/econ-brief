@@ -193,7 +193,7 @@ Notion CMS 기반 경제 뉴스 요약 서비스를 단계적으로 구축하는
 
 ---
 
-### Phase 5: 최적화 및 배포
+### Phase 5: 최적화 및 배포 ✅
 
 > **왜 이 순서인가?**
 > 모든 기능이 완성된 후에야 무엇을 최적화할지 판단할 수 있다.
@@ -216,12 +216,12 @@ Notion CMS 기반 경제 뉴스 요약 서비스를 단계적으로 구축하는
   - ✅ `app/loading.tsx` — 실제 HeroSection 레이아웃에 맞는 스켈레톤 UI 개선
   - ✅ `lib/notion.ts` — `timeoutMs: 10000` 설정, 5개 함수 try/catch 에러 핸들링 추가
 
-- **Task 013: Vercel 배포 및 환경변수 설정** ⬜ 미시작
-  - Vercel 프로젝트 연결 및 GitHub 자동 배포 설정
-  - `NOTION_API_KEY`, `NOTION_DATABASE_ID` 환경변수 Vercel 대시보드 등록
-  - 프로덕션 빌드 검증 (`npm run build && npm run start`)
-  - 배포 후 홈·카테고리·상세 페이지 동작 확인
-  - Vercel Analytics 활성화 (선택)
+- **Task 013: Vercel 배포 및 환경변수 설정** ✅ — 완료
+  - ✅ Vercel 프로젝트 연결 및 GitHub 자동 배포 설정
+  - ✅ `NOTION_API_KEY`, `NOTION_DATABASE_ID` 환경변수 Vercel 대시보드 등록
+  - ✅ 프로덕션 빌드 검증 (`npm run build`)
+  - ✅ 배포 후 홈·카테고리·상세 페이지 동작 확인
+  - ✅ Vercel Analytics 활성화 (선택)
 
 ---
 
@@ -248,4 +248,4 @@ Notion CMS 기반 경제 뉴스 요약 서비스를 단계적으로 구축하는
 | Phase 2: 공통 모듈 구축 | ✅ 완료 | Task 002, 003, 004 완료 |
 | Phase 3: 핵심 기능 구현 | ✅ 완료 | Task 005, 006, 007, 008, 009 완료 |
 | Phase 4: 추가 기능 구현 | ✅ 완료 | Task 009, 010 완료 |
-| Phase 5: 최적화 및 배포 | 🔄 진행 중 | Task 011, 012 완료 |
+| Phase 5: 최적화 및 배포 | ✅ 완료 | Task 011, 012, 013 완료 |
