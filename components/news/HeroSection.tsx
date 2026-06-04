@@ -12,6 +12,9 @@ interface HeroSectionProps {
 
 // 개별 히어로 카드: 썸네일 위에 제목·카테고리 오버레이
 function HeroCard({ article, large = false }: { article: NewsArticle; large?: boolean }) {
+  // 썸네일 유무에 따라 텍스트 색상과 그라데이션 오버레이를 분기
+  const hasThumbnail = !!article.thumbnail
+
   return (
     <Link
       href={`/news/${article.id}`}
@@ -19,9 +22,9 @@ function HeroCard({ article, large = false }: { article: NewsArticle; large?: bo
     >
       {/* 썸네일 배경 */}
       <div className={`relative w-full overflow-hidden ${large ? "aspect-video" : "aspect-[4/3]"}`}>
-        {article.thumbnail ? (
+        {hasThumbnail ? (
           <Image
-            src={article.thumbnail}
+            src={article.thumbnail!}
             alt={article.title}
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-105"
@@ -30,8 +33,10 @@ function HeroCard({ article, large = false }: { article: NewsArticle; large?: bo
         ) : (
           <div className="h-full w-full bg-muted" />
         )}
-        {/* 어두운 그라데이션 오버레이 */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+        {/* 그라데이션 오버레이: 썸네일 있을 때만 — 없을 때는 밝은 bg-muted 위에 text-white 불가시 */}
+        {hasThumbnail && (
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+        )}
       </div>
 
       {/* 텍스트 오버레이: 하단 정렬 */}
@@ -40,7 +45,7 @@ function HeroCard({ article, large = false }: { article: NewsArticle; large?: bo
           {article.category}
         </Badge>
         <h3
-          className={`font-bold text-white leading-snug ${
+          className={`font-bold leading-snug ${hasThumbnail ? "text-white" : "text-foreground"} ${
             large ? "text-xl md:text-2xl line-clamp-2" : "text-sm line-clamp-3"
           }`}
         >

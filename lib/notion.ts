@@ -3,6 +3,8 @@ import {
   isFullPage,
   isFullDatabase,
   iteratePaginatedAPI,
+  APIResponseError,
+  APIErrorCode,
 } from "@notionhq/client"
 import type { PageObjectResponse } from "@notionhq/client"
 import type { NewsArticle, NotionBlock } from "@/lib/types"
@@ -23,6 +25,13 @@ let cachedDataSourceId: string | null = null
 // databases.retrieve로 data_source_id 1회 조회 후 캐싱
 async function getDataSourceId(): Promise<string> {
   if (cachedDataSourceId) return cachedDataSourceId
+  // 환경변수 누락 시 조용한 실패 방지 — 명시적 에러로 원인 즉시 노출
+  if (!DATABASE_ID) {
+    throw new Error("[notion] NOTION_DATABASE_ID 환경변수가 설정되지 않았습니다.")
+  }
+  if (!process.env.NOTION_API_KEY) {
+    throw new Error("[notion] NOTION_API_KEY 환경변수가 설정되지 않았습니다.")
+  }
   const db = await notion.databases.retrieve({ database_id: DATABASE_ID })
   if (!isFullDatabase(db) || db.data_sources.length === 0) {
     throw new Error("Notion DB에서 데이터 소스를 찾을 수 없습니다.")
@@ -147,15 +156,22 @@ export async function getNewsArticlesByTag(tag: string): Promise<NewsArticle[]> 
   }
 }
 
-// 단건 뉴스 아티클 조회 (존재하지 않으면 null 반환)
+// 단건 뉴스 아티클 조회 (미발행·미존재이면 null, API 오류이면 throw)
 export async function getNewsArticle(id: string): Promise<NewsArticle | null> {
   try {
     const page = await notion.pages.retrieve({ page_id: id })
     if (!isFullPage(page)) return null
-    return parsePageToNewsArticle(page)
-  } catch {
-    // 존재하지 않는 ID 등 API 오류 시 null 반환
-    return null
+    const article = parsePageToNewsArticle(page)
+    // Draft 아티클 URL 직접 접근 차단 — 404처럼 처리
+    if (article.status !== "Published") return null
+    return article
+  } catch (error) {
+    // 실제 404(ObjectNotFound) → null 반환 → notFound() 처리
+    if (error instanceof APIResponseError && error.code === APIErrorCode.ObjectNotFound) {
+      return null
+    }
+    // 네트워크·타임아웃 등 서버 오류 → 재throw → error.tsx 처리
+    throw error
   }
 }
 

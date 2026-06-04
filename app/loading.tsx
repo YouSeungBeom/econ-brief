@@ -32,7 +32,7 @@ export default function Loading() {
       </div>
 
       {/* ── 뉴스 카드 그리드 스켈레톤 (실제 NewsCard 내부 구조 반영) ── */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="flex flex-col gap-3 rounded-xl overflow-hidden ring-1 ring-foreground/10">
             {/* 썸네일 영역 */}

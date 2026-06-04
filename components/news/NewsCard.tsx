@@ -1,7 +1,7 @@
 // 뉴스 아티클 카드 컴포넌트: 목록에서 단일 뉴스 항목을 카드 형태로 표시
 import Link from "next/link"
 import Image from "next/image"
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
+import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { TagBadge } from "@/components/news/TagBadge"
 import type { NewsArticle } from "@/lib/types"
@@ -58,10 +58,10 @@ export function NewsCard({ article }: NewsCardProps) {
             {formatDate(article.published)}
           </span>
         </div>
-        {/* 제목: 최대 2줄 */}
-        <CardTitle className="line-clamp-2 text-sm font-semibold leading-snug">
+        {/* 제목: 최대 2줄 — CardTitle(<div>)이 아닌 <h3>으로 시맨틱 헤딩 적용 */}
+        <h3 className="line-clamp-2 text-sm font-semibold leading-snug font-heading">
           {article.title}
-        </CardTitle>
+        </h3>
       </CardHeader>
 
       {/* 요약: 최대 3줄 */}

@@ -93,22 +93,23 @@ function renderBlock(block: NotionBlock): ReactNode {
         </p>
       )
     case "heading_1":
+      // 뉴스 상세 페이지에 이미 <h1>이 존재하므로 h2로 렌더링 (페이지당 h1 중복 방지)
       return (
-        <h1 key={id} className="mt-8 mb-4 text-3xl font-bold tracking-tight">
-          {richText}
-        </h1>
-      )
-    case "heading_2":
-      return (
-        <h2 key={id} className="mt-6 mb-3 text-2xl font-semibold">
+        <h2 key={id} className="mt-8 mb-4 text-3xl font-bold tracking-tight">
           {richText}
         </h2>
       )
-    case "heading_3":
+    case "heading_2":
       return (
-        <h3 key={id} className="mt-4 mb-2 text-xl font-semibold">
+        <h3 key={id} className="mt-6 mb-3 text-2xl font-semibold">
           {richText}
         </h3>
+      )
+    case "heading_3":
+      return (
+        <h4 key={id} className="mt-4 mb-2 text-xl font-semibold">
+          {richText}
+        </h4>
       )
     case "bulleted_list_item":
       return (
